@@ -4,32 +4,55 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type\Factory;
 
+use spaceonfire\Type\AbstractAggregatedType;
+use spaceonfire\Type\Exception\TypeNotSupportedException;
+use spaceonfire\Type\TypeInterface;
+
 abstract class AbstractAggregatedTypeFactory implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
     /**
-     * @var non-empty-string
+     * @var class-string<AbstractAggregatedType>
      */
-    protected $delimiter;
+    protected const TYPE_CLASS = AbstractAggregatedType::class;
 
-    /**
-     * @param non-empty-string $delimiter
-     */
-    public function __construct(string $delimiter)
+    final public function __construct()
     {
-        $this->delimiter = $delimiter;
+        if (!\is_subclass_of(static::TYPE_CLASS, AbstractAggregatedType::class)) {
+            throw new \RuntimeException(\sprintf(
+                '%s::TYPE_CLASS should be class-string of %s.',
+                static::class,
+                AbstractAggregatedType::class,
+            ));
+        }
+
+        if (1 !== \strlen(self::constant(static::TYPE_CLASS, 'DELIMITER'))) {
+            throw new \RuntimeException(\sprintf('%s::DELIMITER should be 1 symbol string.', static::TYPE_CLASS));
+        }
     }
 
-    /**
-     * @inheritDoc
-     */
     final public function supports(string $type): bool
     {
         return null !== $this->parse($type);
     }
 
-    final protected function parse(string $type): ?array
+    final public function make(string $type): TypeInterface
+    {
+        $parsed = $this->parse($type);
+
+        if (null === $parsed || null === $this->parent) {
+            throw new TypeNotSupportedException($type, static::TYPE_CLASS);
+        }
+
+        return \call_user_func([static::TYPE_CLASS, 'new'], ...\array_map([$this->parent, 'make'], $parsed));
+    }
+
+    /**
+     * @param string $type
+     * @return array{string,string}|null
+     */
+    private function parse(string $type): ?array
     {
         if (null === $this->parent) {
             return null;
@@ -47,7 +70,7 @@ abstract class AbstractAggregatedTypeFactory implements TypeFactoryInterface
             [$appendLeft, $right] = $this->split($right);
 
             if ('' !== $appendLeft) {
-                $left .= $this->delimiter . $appendLeft;
+                $left .= self::constant(static::TYPE_CLASS, 'DELIMITER') . $appendLeft;
             }
 
             if ('' === $right) {
@@ -62,8 +85,22 @@ abstract class AbstractAggregatedTypeFactory implements TypeFactoryInterface
         return [$left, $right];
     }
 
+    /**
+     * @param string $string
+     * @return string[]
+     */
     private function split(string $string): array
     {
-        return explode($this->delimiter, $string, 2) + ['', ''];
+        return \explode(self::constant(static::TYPE_CLASS, 'DELIMITER'), $string, 2) + ['', ''];
+    }
+
+    /**
+     * @param class-string $className
+     * @param string $constName
+     * @return mixed
+     */
+    private static function constant(string $className, string $constName)
+    {
+        return \constant(\sprintf('%s::%s', $className, $constName));
     }
 }

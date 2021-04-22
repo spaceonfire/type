@@ -10,7 +10,7 @@ class MixedTypeTest extends TestCase
 {
     public function testCheck(): void
     {
-        $type = new MixedType();
+        $type = MixedType::new();
         self::assertTrue($type->check(true));
         self::assertTrue($type->check(42));
         self::assertTrue($type->check('string'));
@@ -21,7 +21,7 @@ class MixedTypeTest extends TestCase
 
     public function testToString(): void
     {
-        $type = new MixedType();
+        $type = MixedType::new();
         self::assertSame('mixed', (string)$type);
     }
 }

@@ -12,33 +12,13 @@ final class BuiltinTypeFactory implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
-    /**
-     * @var bool
-     */
-    private $strictByDefault;
-
-    /**
-     * BuiltinTypeFactory constructor.
-     * @param bool $strictByDefault
-     */
-    public function __construct(bool $strictByDefault = true)
-    {
-        $this->strictByDefault = $strictByDefault;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
         $type = $this->prepareType($type);
 
-        return in_array($type, BuiltinType::ALL, true);
+        return \in_array($type, BuiltinType::ALL, true);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         $type = $this->prepareType($type);
@@ -47,14 +27,14 @@ final class BuiltinTypeFactory implements TypeFactoryInterface
             throw new TypeNotSupportedException($type, BuiltinType::class);
         }
 
-        return new BuiltinType($type, $this->prepareStrictArgument($type));
+        return BuiltinType::new($type);
     }
 
     private function prepareType(string $type): string
     {
-        $type = strtolower($this->removeWhitespaces($type));
+        $type = \strtolower($this->removeWhitespaces($type));
 
-        if (0 === strpos($type, 'resource')) {
+        if (\str_starts_with($type, 'resource')) {
             $type = BuiltinType::RESOURCE;
         }
 
@@ -65,12 +45,5 @@ final class BuiltinTypeFactory implements TypeFactoryInterface
         ];
 
         return $map[$type] ?? $type;
-    }
-
-    private function prepareStrictArgument(string $type): bool
-    {
-        return false === $this->strictByDefault && !isset(BuiltinType::SCALAR_TYPES[$type])
-            ? true
-            : $this->strictByDefault;
     }
 }

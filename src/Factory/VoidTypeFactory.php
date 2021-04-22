@@ -12,18 +12,11 @@ final class VoidTypeFactory implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
-        $type = $this->removeWhitespaces($type);
-        return VoidType::NAME === $type;
+        return VoidType::NAME === $this->removeWhitespaces($type);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         $type = $this->removeWhitespaces($type);
@@ -32,6 +25,6 @@ final class VoidTypeFactory implements TypeFactoryInterface
             throw new TypeNotSupportedException($type, VoidType::class);
         }
 
-        return new VoidType();
+        return VoidType::new();
     }
 }

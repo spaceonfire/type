@@ -4,12 +4,25 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type;
 
-use InvalidArgumentException;
-use spaceonfire\Type\Factory\BuiltinTypeFactory;
-use Webmozart\Assert\Assert;
+use spaceonfire\Common\Factory\SingletonStorageTrait;
+use spaceonfire\Common\Factory\StaticConstructorInterface;
 
-final class BuiltinType implements TypeInterface
+/**
+ * @method static self int()
+ * @method static self float()
+ * @method static self string()
+ * @method static self bool()
+ * @method static self resource()
+ * @method static self object()
+ * @method static self array()
+ * @method static self null()
+ * @method static self callable()
+ * @method static self iterable()
+ */
+final class BuiltinType implements TypeInterface, StaticConstructorInterface
 {
+    use SingletonStorageTrait;
+
     public const INT = 'int';
 
     public const FLOAT = 'float';
@@ -43,169 +56,92 @@ final class BuiltinType implements TypeInterface
         self::ITERABLE,
     ];
 
-    public const SCALAR_TYPES = [
-        self::INT => self::INT,
-        self::FLOAT => self::FLOAT,
-        self::STRING => self::STRING,
-        self::BOOL => self::BOOL,
-    ];
+    private string $type;
 
-    /**
-     * @var string
-     */
-    private $type;
-
-    /**
-     * @var bool
-     */
-    private $strict;
-
-    /**
-     * BuiltinType constructor.
-     * @param string $type
-     * @param bool $strict
-     */
-    public function __construct(string $type, bool $strict = true)
+    private function __construct(string $type)
     {
-        Assert::oneOf($type, self::ALL);
-
-        if (false === $strict && !isset(self::SCALAR_TYPES[$type])) {
-            $strict = true;
-            trigger_error(sprintf('Type "%s" cannot be non-strict. $strict argument overridden.', $type));
-        }
-
         $this->type = $type;
-        $this->strict = $strict;
+
+        self::singletonAttach($this);
     }
 
-    /**
-     * @inheritDoc
-     */
+    public function __destruct()
+    {
+        self::singletonDetach($this);
+    }
+
     public function __toString(): string
     {
         return $this->type;
     }
 
     /**
-     * @inheritDoc
+     * Magic factory.
+     * @param string $name
+     * @param array{} $arguments
+     * @return self
      */
-    public function check($value): bool
+    public static function __callStatic(string $name, array $arguments): self
     {
-        try {
-            switch ($this->type) {
-                case self::INT:
-                    if ($this->strict) {
-                        Assert::integer($value);
-                    } else {
-                        Assert::integerish($value);
-                    }
-                    break;
-
-                case self::FLOAT:
-                    if ($this->strict) {
-                        Assert::float($value);
-                    } else {
-                        Assert::numeric($value);
-                    }
-                    break;
-
-                case self::STRING:
-                    if ($this->strict) {
-                        Assert::string($value);
-                    } elseif (is_object($value)) {
-                        Assert::methodExists($value, '__toString');
-                    } else {
-                        Assert::scalar($value);
-                    }
-                    break;
-
-                case self::BOOL:
-                    if ($this->strict) {
-                        Assert::boolean($value);
-                    } else {
-                        Assert::scalar($value);
-                    }
-                    break;
-
-                case self::RESOURCE:
-                    Assert::resource($value);
-                    break;
-
-                case self::OBJECT:
-                    Assert::object($value);
-                    break;
-
-                case self::ARRAY:
-                    Assert::isArray($value);
-                    break;
-
-                case self::NULL:
-                    Assert::null($value);
-                    break;
-
-                case self::CALLABLE:
-                    Assert::isCallable($value);
-                    break;
-
-                case self::ITERABLE:
-                    Assert::isIterable($value);
-                    break;
-            }
-
-            return true;
-        } catch (InvalidArgumentException $exception) {
-            return false;
-        }
+        return self::new($name);
     }
 
-    /**
-     * Cast value to current type
-     * @param mixed $value
-     * @return mixed
-     */
-    public function cast($value)
+    public static function new(string $type): self
+    {
+        if (!\in_array($type, self::ALL, true)) {
+            throw new \InvalidArgumentException(\sprintf(
+                'Argument #1 ($type) should be one of: %s. Got: %s.',
+                \implode(', ', self::ALL),
+                $type,
+            ));
+        }
+
+        return self::singletonFetch($type) ?? new self($type);
+    }
+
+    public function check($value): bool
     {
         switch ($this->type) {
             case self::INT:
-                return (int)$value;
+                return \is_int($value);
 
             case self::FLOAT:
-                return (float)$value;
+                return \is_float($value);
 
             case self::STRING:
-                return (string)$value;
+                return \is_string($value);
 
             case self::BOOL:
-                return (bool)$value;
+                return \is_bool($value);
+
+            case self::RESOURCE:
+                return \is_resource($value);
+
+            case self::OBJECT:
+                return \is_object($value);
+
+            case self::ARRAY:
+                return \is_array($value);
 
             case self::NULL:
-                return null;
+                return null === $value;
 
-            default:
-                return $value;
+            case self::CALLABLE:
+                return \is_callable($value);
+
+            case self::ITERABLE:
+                return \is_iterable($value);
         }
+
+        return false;
     }
 
     /**
-     * @param string $type
-     * @return bool
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
+     * @param string|self $value
+     * @return string
      */
-    public static function supports(string $type): bool
+    protected static function singletonKey($value): string
     {
-        return (new BuiltinTypeFactory())->supports($type);
-    }
-
-    /**
-     * @param string $type
-     * @param bool $strict
-     * @return self
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
-     */
-    public static function create(string $type, bool $strict = true): TypeInterface
-    {
-        return (new BuiltinTypeFactory($strict))->make($type);
+        return (string)$value;
     }
 }

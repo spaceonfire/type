@@ -10,12 +10,21 @@ use Traversable;
 
 class ConjunctionTypeTest extends AbstractTestCase
 {
+    public function testFactoryOneArgument(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        ConjunctionType::new(
+            BuiltinType::new(BuiltinType::INT),
+        );
+    }
+
     public function testCheck(): void
     {
-        $type = new ConjunctionType([
-            new InstanceOfType(JsonSerializable::class),
-            new InstanceOfType(Traversable::class),
-        ]);
+        $type = ConjunctionType::new(
+            InstanceOfType::new(JsonSerializable::class),
+            InstanceOfType::new(Traversable::class),
+        );
 
         $jsonSerializable = $this->prophesize(JsonSerializable::class)->reveal();
         $jsonSerializableAndTraversable = $this->prophesize(JsonSerializable::class)->willImplement(Iterator::class)->reveal();
@@ -26,10 +35,10 @@ class ConjunctionTypeTest extends AbstractTestCase
 
     public function testStringify(): void
     {
-        $type = new ConjunctionType([
-            new InstanceOfType(JsonSerializable::class),
-            new InstanceOfType(Traversable::class),
-        ]);
+        $type = ConjunctionType::new(
+            InstanceOfType::new(JsonSerializable::class),
+            InstanceOfType::new(Traversable::class),
+        );
 
         self::assertSame(JsonSerializable::class . '&' . Traversable::class, (string)$type);
     }

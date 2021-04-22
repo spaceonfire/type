@@ -19,24 +19,19 @@ $ composer require spaceonfire/type
 
 ```php
 use spaceonfire\Type\BuiltinType;
-use Webmozart\Assert\Assert;
 
-$int = new BuiltinType(BuiltinType::INT);
-Assert::true($int->check(1));
-Assert::false($int->check('1'));
-
-$intNonStrict = new BuiltinType(BuiltinType::INT, false);
-Assert::true($intNonStrict->check('1'));
-Assert::same(1, $intNonStrict->cast('1'));
+$int = BuiltinType::int();
+\assert(true === $int->check(1));
+\assert(false === $int->check('string'));
 ```
 
 You can also use factory to create type object from string
 
 ```php
-use spaceonfire\Type\Factory\CompositeTypeFactory;
+use spaceonfire\Type\Factory\TypeFactoryAggregate;
 use spaceonfire\Type\Factory\MemoizedTypeFactory;
 
-$factory = new MemoizedTypeFactory(CompositeTypeFactory::makeWithDefaultFactories());
+$factory = new MemoizedTypeFactory(TypeFactoryAggregate::default());
 $factory->make('int');
 $factory->make('string[]');
 $factory->make('array<string,object>');

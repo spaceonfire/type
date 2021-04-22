@@ -7,30 +7,29 @@ namespace spaceonfire\Type\Factory;
 use spaceonfire\Type\Exception\TypeNotSupportedException;
 use spaceonfire\Type\TypeInterface;
 
-final class CompositeTypeFactory implements TypeFactoryInterface
+final class TypeFactoryAggregate implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
     /**
      * @var TypeFactoryInterface[]
      */
-    private $factories;
+    private array $factories;
 
-    /**
-     * CompositeTypeFactory constructor.
-     * @param TypeFactoryInterface ...$factories
-     */
     public function __construct(TypeFactoryInterface ...$factories)
     {
         $this->factories = $factories;
     }
 
-    public static function makeWithDefaultFactories(): self
+    public static function default(): self
     {
-        return new self(...self::makeDefaultFactories());
+        return new self(...self::defaultFactories());
     }
 
-    public static function makeDefaultFactories(): iterable
+    /**
+     * @return TypeFactoryInterface[]
+     */
+    public static function defaultFactories(): iterable
     {
         yield new CollectionTypeFactory();
         yield new GroupTypeFactory();
@@ -42,9 +41,6 @@ final class CompositeTypeFactory implements TypeFactoryInterface
         yield new VoidTypeFactory();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
         foreach ($this->factories as $factory) {
@@ -58,9 +54,6 @@ final class CompositeTypeFactory implements TypeFactoryInterface
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         foreach ($this->factories as $factory) {

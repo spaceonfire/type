@@ -16,11 +16,11 @@ use spaceonfire\Type\MixedType;
 use spaceonfire\Type\VoidType;
 use Traversable;
 
-class CompositeTypeFactoryTest extends TestCase
+class TypeFactoryAggregateTest extends TestCase
 {
     public function testSupports(): void
     {
-        $factory = CompositeTypeFactory::makeWithDefaultFactories();
+        $factory = TypeFactoryAggregate::default();
 
         self::assertTrue($factory->supports('int[]'));
         self::assertTrue($factory->supports(JsonSerializable::class . '&' . Traversable::class));
@@ -37,7 +37,7 @@ class CompositeTypeFactoryTest extends TestCase
 
     public function testMake(): void
     {
-        $factory = CompositeTypeFactory::makeWithDefaultFactories();
+        $factory = TypeFactoryAggregate::default();
 
         self::assertInstanceOf(CollectionType::class, $factory->make('int[]'));
         self::assertInstanceOf(ConjunctionType::class, $factory->make(JsonSerializable::class . '&' . Traversable::class));
@@ -51,7 +51,7 @@ class CompositeTypeFactoryTest extends TestCase
 
     public function testMakeException(): void
     {
-        $factory = CompositeTypeFactory::makeWithDefaultFactories();
+        $factory = TypeFactoryAggregate::default();
 
         $this->expectException(TypeNotSupportedException::class);
         $factory->make('unknown');

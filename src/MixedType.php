@@ -4,23 +4,46 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type;
 
-final class MixedType implements TypeInterface
+use spaceonfire\Common\Factory\SingletonStorageTrait;
+use spaceonfire\Common\Factory\StaticConstructorInterface;
+
+final class MixedType implements TypeInterface, StaticConstructorInterface
 {
+    use SingletonStorageTrait;
+
     public const NAME = 'mixed';
 
-    /**
-     * @inheritDoc
-     */
+    private function __construct()
+    {
+        self::singletonAttach($this);
+    }
+
+    public function __destruct()
+    {
+        self::singletonDetach($this);
+    }
+
     public function __toString(): string
     {
         return self::NAME;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function check($_): bool
+    public function check($value): bool
     {
         return true;
+    }
+
+    public static function new(): self
+    {
+        return self::singletonFetch(self::NAME) ?? new self();
+    }
+
+    /**
+     * @param self $value
+     * @return string
+     */
+    protected static function singletonKey($value): string
+    {
+        return self::NAME;
     }
 }

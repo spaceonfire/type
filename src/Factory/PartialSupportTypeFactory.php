@@ -11,10 +11,7 @@ final class PartialSupportTypeFactory implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
-    /**
-     * @var TypeFactoryInterface
-     */
-    private $factory;
+    private TypeFactoryInterface $factory;
 
     /**
      * @var callable
@@ -22,7 +19,6 @@ final class PartialSupportTypeFactory implements TypeFactoryInterface
     private $supportedPredicate;
 
     /**
-     * PartialSupportTypeFactory constructor.
      * @param TypeFactoryInterface $factory
      * @param callable $supportedPredicate
      */
@@ -32,18 +28,12 @@ final class PartialSupportTypeFactory implements TypeFactoryInterface
         $this->supportedPredicate = $supportedPredicate;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
         $type = $this->removeWhitespaces($type);
         return $this->factory->supports($type) && ($this->supportedPredicate)($type);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         $type = $this->removeWhitespaces($type);

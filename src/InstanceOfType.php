@@ -4,64 +4,58 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type;
 
-use InvalidArgumentException;
-use spaceonfire\Type\Factory\InstanceOfTypeFactory;
+use spaceonfire\Common\Factory\SingletonStorageTrait;
+use spaceonfire\Common\Factory\StaticConstructorInterface;
 
-final class InstanceOfType implements TypeInterface
+final class InstanceOfType implements TypeInterface, StaticConstructorInterface
 {
-    /**
-     * @var string
-     */
-    private $className;
+    use SingletonStorageTrait;
 
     /**
-     * InstanceOfType constructor.
-     * @param string $className
+     * @var class-string
      */
-    public function __construct(string $className)
+    private string $className;
+
+    /**
+     * @param class-string $className
+     */
+    private function __construct(string $className)
     {
-        if (!class_exists($className) && !interface_exists($className)) {
-            throw new InvalidArgumentException(sprintf('Type "%s" is not supported by %s', $className, __CLASS__));
-        }
-
         $this->className = $className;
+
+        self::singletonAttach($this);
     }
 
-    /**
-     * @inheritDoc
-     */
+    public function __destruct()
+    {
+        self::singletonDetach($this);
+    }
+
     public function __toString(): string
     {
         return $this->className;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function check($value): bool
     {
         return $value instanceof $this->className;
     }
 
     /**
-     * @param string $type
-     * @return bool
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
+     * @param class-string $className
+     * @return self
      */
-    public static function supports(string $type): bool
+    public static function new(string $className): self
     {
-        return (new InstanceOfTypeFactory())->supports($type);
+        return self::singletonFetch($className) ?? new self($className);
     }
 
     /**
-     * @param string $type
-     * @return self
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
+     * @param self $value
+     * @return string
      */
-    public static function create(string $type): TypeInterface
+    protected static function singletonKey($value): string
     {
-        return (new InstanceOfTypeFactory())->make($type);
+        return $value->className;
     }
 }

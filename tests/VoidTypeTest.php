@@ -10,15 +10,15 @@ class VoidTypeTest extends TestCase
 {
     public function testCheck(): void
     {
-        $type = new VoidType();
+        $type = VoidType::new();
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\LogicException::class);
         $type->check(null);
     }
 
     public function testToString(): void
     {
-        $type = new VoidType();
+        $type = VoidType::new();
         self::assertSame('void', (string)$type);
     }
 }

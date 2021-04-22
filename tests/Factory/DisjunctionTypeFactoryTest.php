@@ -15,7 +15,7 @@ class DisjunctionTypeFactoryTest extends TestCase
     private function makeFactory(): DisjunctionTypeFactory
     {
         $factory = new DisjunctionTypeFactory();
-        $factory->setParent(CompositeTypeFactory::makeWithDefaultFactories());
+        $factory->setParent(TypeFactoryAggregate::default());
         return $factory;
     }
 

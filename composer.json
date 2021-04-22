@@ -1,7 +1,7 @@
 {
   "name": "spaceonfire/type",
-  "type": "library",
   "description": "Collection of objects that provides ability of checking value types",
+  "type": "library",
   "keywords": [
     "type",
     "type-check"
@@ -17,11 +17,14 @@
     }
   ],
   "require": {
-    "php": "^7.2|^8.0",
-    "webmozart/assert": "^1.6"
+    "php": "^7.4|^8.0",
+    "spaceonfire/common": "^3.0"
   },
   "require-dev": {
     "ext-json": "*",
+    "phpspec/prophecy": "^1.13",
+    "phpspec/prophecy-phpunit": "^2.0",
+    "phpunit/phpunit": "^9.5",
     "roave/security-advisories": "dev-latest"
   },
   "autoload": {
@@ -32,11 +35,6 @@
   "autoload-dev": {
     "psr-4": {
       "spaceonfire\\Type\\": "tests"
-    }
-  },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "2.5-dev"
     }
   },
   "config": {

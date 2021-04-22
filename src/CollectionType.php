@@ -4,45 +4,36 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type;
 
-use spaceonfire\Type\Factory\CollectionTypeFactory;
-use spaceonfire\Type\Factory\CompositeTypeFactory;
+use spaceonfire\Common\Factory\SingletonStorageTrait;
+use spaceonfire\Common\Factory\StaticConstructorInterface;
 
-final class CollectionType implements TypeInterface
+final class CollectionType implements TypeInterface, StaticConstructorInterface
 {
-    /**
-     * @var TypeInterface
-     */
-    private $valueType;
+    use SingletonStorageTrait;
 
-    /**
-     * @var TypeInterface|null
-     */
-    private $keyType;
+    private TypeInterface $iterableType;
 
-    /**
-     * @var TypeInterface
-     */
-    private $iterableType;
+    private TypeInterface $valueType;
 
-    /**
-     * CollectionType constructor.
-     * @param TypeInterface $valueType
-     * @param TypeInterface|null $keyType
-     * @param TypeInterface|null $iterableType
-     */
-    public function __construct(
+    private ?TypeInterface $keyType;
+
+    private function __construct(
+        TypeInterface $iterableType,
         TypeInterface $valueType,
-        ?TypeInterface $keyType = null,
-        ?TypeInterface $iterableType = null
+        ?TypeInterface $keyType = null
     ) {
+        $this->iterableType = $iterableType;
         $this->valueType = $valueType;
         $this->keyType = $keyType;
-        $this->iterableType = $iterableType ?? new BuiltinType(BuiltinType::ITERABLE);
+
+        self::singletonAttach($this);
     }
 
-    /**
-     * @inheritDoc
-     */
+    public function __destruct()
+    {
+        self::singletonDetach($this);
+    }
+
     public function __toString(): string
     {
         if (
@@ -50,15 +41,23 @@ final class CollectionType implements TypeInterface
             $this->valueType instanceof AbstractAggregatedType ||
             null !== $this->keyType
         ) {
-            return $this->iterableType . '<' . implode(',', array_filter([$this->keyType, $this->valueType])) . '>';
+            return $this->iterableType . '<' . \implode(',', \array_filter([$this->keyType, $this->valueType])) . '>';
         }
 
         return $this->valueType . '[]';
     }
 
-    /**
-     * @inheritDoc
-     */
+    public static function new(
+        TypeInterface $valueType,
+        ?TypeInterface $keyType = null,
+        ?TypeInterface $iterableType = null
+    ): self {
+        $iterableType ??= BuiltinType::new(BuiltinType::ITERABLE);
+
+        return self::singletonFetch(self::singletonKey([$iterableType, $valueType, $keyType]))
+            ?? new self($iterableType, $valueType, $keyType);
+    }
+
     public function check($value): bool
     {
         if (!$this->iterableType->check($value)) {
@@ -79,28 +78,19 @@ final class CollectionType implements TypeInterface
     }
 
     /**
-     * @param string $type
-     * @return bool
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
+     * @param self|array{TypeInterface,TypeInterface,TypeInterface|null} $value
+     * @return string
      */
-    public static function supports(string $type): bool
+    protected static function singletonKey($value): string
     {
-        $factory = new CollectionTypeFactory();
-        $factory->setParent(CompositeTypeFactory::makeWithDefaultFactories());
-        return $factory->supports($type);
-    }
+        if ($value instanceof self) {
+            $iterableType = $value->iterableType;
+            $valueType = $value->valueType;
+            $keyType = $value->keyType;
+        } else {
+            [$iterableType, $valueType, $keyType] = $value;
+        }
 
-    /**
-     * @param string $type
-     * @return self
-     * @deprecated use dynamic type factory instead. This method will be removed in next major release.
-     * @see Factory\TypeFactoryInterface
-     */
-    public static function create(string $type): TypeInterface
-    {
-        $factory = new CollectionTypeFactory();
-        $factory->setParent(CompositeTypeFactory::makeWithDefaultFactories());
-        return $factory->make($type);
+        return \implode(':', [$iterableType, $valueType, $keyType]);
     }
 }

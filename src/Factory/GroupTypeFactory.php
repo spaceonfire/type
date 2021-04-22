@@ -11,9 +11,6 @@ final class GroupTypeFactory implements TypeFactoryInterface
 {
     use TypeFactoryTrait;
 
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
         if (null === $this->parent) {
@@ -22,15 +19,12 @@ final class GroupTypeFactory implements TypeFactoryInterface
 
         $type = $this->removeWhitespaces($type);
 
-        return 2 < strlen($type) &&
-            '(' === $type[0] &&
-            ')' === strrev($type)[0] &&
-            $this->parent->supports(substr($type, 1, -1));
+        return 2 < \strlen($type)
+            && \str_starts_with($type, '(')
+            && \str_ends_with($type, ')')
+            && $this->parent->supports(\substr($type, 1, -1));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         $type = $this->removeWhitespaces($type);
@@ -39,6 +33,8 @@ final class GroupTypeFactory implements TypeFactoryInterface
             throw new TypeNotSupportedException($type);
         }
 
-        return $this->parent->make(substr($type, 1, -1));
+        \assert(null !== $this->parent);
+
+        return $this->parent->make(\substr($type, 1, -1));
     }
 }

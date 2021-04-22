@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type\Exception;
 
-use InvalidArgumentException;
-
-final class TypeNotSupportedException extends InvalidArgumentException
+final class TypeNotSupportedException extends \InvalidArgumentException
 {
     /**
      * TypeNotSupportedException constructor.
@@ -15,6 +13,6 @@ final class TypeNotSupportedException extends InvalidArgumentException
      */
     public function __construct(string $type, ?string $typeClass = null)
     {
-        parent::__construct(sprintf('Type "%s" is not supported%s', $type, $typeClass ? 'by ' . $typeClass : ''));
+        parent::__construct(\sprintf('Type "%s" is not supported%s', $type, $typeClass ? 'by ' . $typeClass : ''));
     }
 }

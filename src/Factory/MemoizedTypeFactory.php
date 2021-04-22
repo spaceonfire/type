@@ -8,34 +8,24 @@ use spaceonfire\Type\TypeInterface;
 
 final class MemoizedTypeFactory implements TypeFactoryInterface
 {
-    /**
-     * @var TypeFactoryInterface
-     */
-    private $underlyingFactory;
+    private TypeFactoryInterface $underlyingFactory;
 
     /**
      * @var array<string,bool>
      */
-    private $cacheSupports = [];
+    private array $cacheSupports = [];
 
     /**
      * @var array<string,TypeInterface>
      */
-    private $cacheMake = [];
+    private array $cacheMake = [];
 
-    /**
-     * MemoizedTypeFactory constructor.
-     * @param TypeFactoryInterface $underlyingFactory
-     */
     public function __construct(TypeFactoryInterface $underlyingFactory)
     {
         $this->underlyingFactory = $underlyingFactory;
         $this->underlyingFactory->setParent($this);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supports(string $type): bool
     {
         if (!isset($this->cacheSupports[$type])) {
@@ -45,9 +35,6 @@ final class MemoizedTypeFactory implements TypeFactoryInterface
         return $this->cacheSupports[$type];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function make(string $type): TypeInterface
     {
         if (!isset($this->cacheMake[$type])) {
@@ -57,9 +44,6 @@ final class MemoizedTypeFactory implements TypeFactoryInterface
         return $this->cacheMake[$type];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setParent(TypeFactoryInterface $parent): void
     {
         $this->underlyingFactory->setParent($parent);

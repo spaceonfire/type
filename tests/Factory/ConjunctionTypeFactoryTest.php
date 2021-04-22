@@ -15,7 +15,7 @@ class ConjunctionTypeFactoryTest extends TestCase
     private function makeFactory(): ConjunctionTypeFactory
     {
         $factory = new ConjunctionTypeFactory();
-        $factory->setParent(CompositeTypeFactory::makeWithDefaultFactories());
+        $factory->setParent(TypeFactoryAggregate::default());
         return $factory;
     }
 

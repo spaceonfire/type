@@ -35,18 +35,12 @@ class BuiltinTypeFactoryTest extends TestCase
     public function testMake(): void
     {
         $factory = new BuiltinTypeFactory();
-        $nonStrictIntegerType = $factory->make('integer');
-        self::assertInstanceOf(BuiltinType::class, $nonStrictIntegerType);
-        self::assertTrue($nonStrictIntegerType->check(42));
-        self::assertFalse($nonStrictIntegerType->check('42'));
+        $integerType = $factory->make('integer');
+        self::assertInstanceOf(BuiltinType::class, $integerType);
+        self::assertTrue($integerType->check(42));
+        self::assertFalse($integerType->check('42'));
 
-        $nonStrictFactory = new BuiltinTypeFactory(false);
-        $nonStrictIntegerType = $nonStrictFactory->make('integer');
-        self::assertInstanceOf(BuiltinType::class, $nonStrictIntegerType);
-        self::assertTrue($nonStrictIntegerType->check(42));
-        self::assertTrue($nonStrictIntegerType->check('42'));
-
-        $objectType = $nonStrictFactory->make('object');
+        $objectType = $factory->make('object');
         self::assertInstanceOf(BuiltinType::class, $objectType);
         self::assertTrue($objectType->check((object)[]));
     }

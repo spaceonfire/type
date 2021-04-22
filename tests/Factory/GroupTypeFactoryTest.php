@@ -15,7 +15,7 @@ class GroupTypeFactoryTest extends TestCase
     private function makeFactory(): GroupTypeFactory
     {
         $factory = new GroupTypeFactory();
-        $factory->setParent(CompositeTypeFactory::makeWithDefaultFactories());
+        $factory->setParent(TypeFactoryAggregate::default());
         return $factory;
     }
 

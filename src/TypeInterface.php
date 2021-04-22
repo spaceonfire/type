@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace spaceonfire\Type;
 
-interface TypeInterface
+interface TypeInterface extends \Stringable
 {
     /**
      * Print type as a string
