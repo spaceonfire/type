@@ -47,6 +47,9 @@ final class CasterFactoryAggregate implements CasterFactoryInterface, \IteratorA
         return null;
     }
 
+    /**
+     * @return \ArrayIterator<int,CasterFactoryInterface>
+     */
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->factories);

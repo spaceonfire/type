@@ -9,6 +9,9 @@ use spaceonfire\Type\TypeInterface;
 
 final class NullCasterFactory implements CasterFactoryInterface
 {
+    /**
+     * @phpstan-var NullCaster::ACCEPT_*
+     */
     private string $accept;
 
     /**
